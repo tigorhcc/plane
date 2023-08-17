@@ -1,0 +1,9 @@
+id,origem,destino,tamanho
+r1,poa,flo,500
+r2,poa,gru,1200
+r3,gru,poa,1200
+r4,flo,cwb,300
+r5,cwb,flo,300
+r6,cwb,gru,500
+r7,gru,cwb,500
+r8,flo,poa,500
