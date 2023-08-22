@@ -213,7 +213,10 @@ console.log(plano2);// Exibe as informações do plano de voo
 plano1.cancelar();
 
 console.log(plano1.cancelado); 
-console.log(plano2.cancelado); 
+console.log(plano2.cancelado); // teste de atualizacao. 
+
+console.log(plano3.cancelado);
+// teste de atualizacao. 
 
 
 
