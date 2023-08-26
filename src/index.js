@@ -149,12 +149,10 @@ class ServicoAerovia{
 }
 
 class ServicoAeronaves{
-
 }
 
-
 class Aeronave{
-    constructor(object, prefixo, velocidadeCruzeiro, autonomia){
+    constructor( object, prefixo, velocidadeCruzeiro, autonomia){
         
         var objAeronave = {
             ...object,
@@ -162,20 +160,23 @@ class Aeronave{
             velocidadeCruzeiro:velocidadeCruzeiro,
             autonomia:autonomia
         }
-        aeronaves.push(objAeronave)
-
-       
+        aeronaves.push(objAeronave) 
         
     }
 }
 
-class AeronaveParticular extends Aeronave{
-    constructor(prefixo, velocidadeCruzeiro, autonomia, respManutencao){
-    super(prefixo, velocidadeCruzeiro, autonomia)
-    this.respManutencao = respManutencao
+
+class AeronaveParticular{
+    constructor(respManutencao){
+        var ob = {respManutencao:respManutencao}
+        var uni = 'aeronave-particular'
+        new Aeronave(ob, uni, 800, 2000)
 
     }
 }
+
+
+
 
 class AeronaveComercial {
     constructor(object,nomeCia){
@@ -185,6 +186,7 @@ class AeronaveComercial {
         new Aeronave(obj,tipo, 800, 2000) 
     }
 }
+
 
 
 class AeronaveCarga{
@@ -213,10 +215,12 @@ class AeronavePassageiros{
 
     //new AeronavePassageiros(Number(variable))
 //});
+var aeropassageiros = new AeronavePassageiros(400);
+var aerocarga = new AeronaveCarga(5000);
+var part = new AeronaveParticular('manSul');
 
-var aerocarga = new AeronaveCarga(5000)
 
-console.log(aeronaves);
+
 
 class PlanoDeVoo {
     constructor(id, matricPiloto, idAerovia, data, horario, altitude, slots) {
@@ -236,31 +240,83 @@ class PlanoDeVoo {
 }
 
 // Exemplo de uso: Plano de Voo
-/*const plano1 = new PlanoDeVoo("123", "P123", "POA-FLO", "2023-08-15", "14:00", 30000, [15, 16]);
-console.log(plano1); // Exibe as informações do plano de voo
+//const plano1 = new PlanoDeVoo("1", "2", "POA-FLO", "2023-08-15", "14:00", 25000, [14, 15]);
+//console.log(plano1); // Exibe as informações do plano de voo
 
-const plano2 = new PlanoDeVoo("2", "3", "POA-FLO", "2023-08-15", "14:00", 30000, [15, 16]);
-console.log(plano2);// Exibe as informações do plano de voo
-plano1.cancelar();
+//const plano2 = new PlanoDeVoo("2", "3", "POA-GRU", "2023-08-28", "18:00", 29000, [18, 19]);
+//console.log(plano2);// Exibe as informações do plano de voo
 
-console.log(plano1.cancelado); 
-console.log(plano2.cancelado); // teste de atualizacao. */
-
-
-// teste de atualizacao. 
+//const plano3 = new PlanoDeVoo("3", "1", "CWB-GRU", "2023-08-30", "02:00", 30000, 2);
+//console.log(plano3);// Exibe as informações do plano de voo
 
 
-// teste de atualizacao. 
+//teste para ver se esta cancelado o voo 
+//console.log(plano1.cancelado); 
+//console.log(plano2.cancelado);  
 
 class Menu {
     listarAerovias(){
         const lists = new ServicoAerovia()
         console.log(lists.recupera('flo','gru'))
-    }
-    
+    }   
 }
 var mn= new Menu();
 //mn.listarAerovias();
+
+
+
+
+class ocupacaoAerovia{
+    constructor() {
+        this.ocupacoes = [];
+        
+    }
+     
+    altitudesOcupadas(idAerovia,data){
+       return this.ocupacoes.filter(ocupacao =>ocupacao.idAerovia === idAerovia && ocupacao.data === data)
+       .map(ocupacao => ocupacao.altitude)
+    
+
+    }
+
+    slotsOcupados(idAerovia,data, altitude){
+
+
+    }
+
+    ocupa(idAerovia,data,altitude,slot){
+        this.ocupacoes.push({idAerovia,data,altitude,slot})
+        console.log(`Ocupação registrada: Aerovia ${idAerovia}, Data ${data}, Altitude ${altitude}, Slot ${slot}`);
+        
+        
+    }
+
+    libera(idAerovia,data,altitude,slot){
+        
+
+
+    }
+
+    isOcupado(idAerovia,data,altitude,slot){
+
+
+    }
+}
+var ocuAero1 = new ocupacaoAerovia();
+var oc = ocuAero1.ocupa('r1','2023-08-15', 30000, 14 );
+var oc = ocuAero1.ocupa('r1','2023-08-13', 25000, 17 );
+
+var ocuAero2 = new ocupacaoAerovia();
+var oc = ocuAero2.ocupa('r3','2023-09-02', 28000, 12 );
+var oc = ocuAero2.ocupa('r3','2023-09-05', 32000, 1 );
+var oc = ocuAero2.ocupa('r3','2023-09-10', 31000, 10 );
+
+var ocuAero3 = new ocupacaoAerovia();
+var oc = ocuAero3.ocupa('r7','2023-09-15', 30000, 1 );
+var ocuAero4 = new ocupacaoAerovia();
+var oc = ocuAero4.ocupa('r5','2023-09-10', 28000, 14 );
+
+console.log(ocuAero1.altitudesOcupadas("r1", "2023-08-15")); 
 
 
 
