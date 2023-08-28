@@ -1,5 +1,6 @@
-const lineByLine = require('n-readlines'); 
+const lineByLine = require('n-readlines');
 var aeronaves = []
+var tdaltitudes = [25000,26000,27000,28000,29000,30000,31000,32000,33000,34000,35000]
 
 
 const pilotosTxt = new lineByLine('./src/assets/pilotos.txt');
@@ -16,13 +17,12 @@ class ServicoPilotos{
                     piloto = {
                     "matricula": results[0],
                     "nome": results[1],
-                    "habilitacao": Boolean(results[2])
+                    "habilitacao": results[2] == 'false' ? false : true
                     }; 
                 }   
             }
             lineNumber++;
         } 
-        console.log(piloto);
         return piloto
 
     }
@@ -47,15 +47,37 @@ class ServicoPilotos{
     }
 
 }
-var sp = new ServicoPilotos();
-//var allPilotos = sp.todos();
-//var firstPiloto = sp.recupera(2);
+
+const servicoPilotos = new ServicoPilotos();
+servicoPilotos.todos();
 
 
- 
 const aeroviasTxt = new lineByLine('./src/assets/aerovias.txt');
 
 class ServicoAerovia{
+    recuperaID(id){
+        let line;
+        let lineNumber = 1;
+        let aerovias = {};
+        while (line = aeroviasTxt.next()) {
+            var results = line.toString('ascii').split(',');
+            if (lineNumber > 1) {
+                
+                if (results[0] == id) {
+                    
+                    var aerovia = {
+                        "id": results[0],
+                        "origem": results[1],
+                        "destino": results[2],
+                        "tamanho": Number(results[3])
+                    };
+                    return aerovia
+                }
+            }
+            lineNumber++;
+        }
+
+    }
     
     recupera(origem, destino) {
         //console.log("Iniciando a função com origem:", origem, "e destino:", destino);
@@ -147,8 +169,15 @@ class ServicoAerovia{
         }
     }
 }
+var aro = new ServicoAerovia()
+aro.recupera('gru','flo');
+
 
 class ServicoAeronaves{
+    todas(){
+       console.log(aeronaves)
+        return aeronaves
+    }
 }
 
 class Aeronave{
@@ -169,14 +198,11 @@ class Aeronave{
 class AeronaveParticular{
     constructor(respManutencao){
         var ob = {respManutencao:respManutencao}
-        var uni = 'aeronave-particular'
+        var uni = 'aeronave_particular'
         new Aeronave(ob, uni, 800, 2000)
 
     }
 }
-
-
-
 
 class AeronaveComercial {
     constructor(object,nomeCia){
@@ -186,8 +212,6 @@ class AeronaveComercial {
         new Aeronave(obj,tipo, 800, 2000) 
     }
 }
-
-
 
 class AeronaveCarga{
     constructor(pesoMax){
@@ -204,40 +228,14 @@ class AeronavePassageiros{
         
     }
 }
-
-//console.log("qual o numero máximo de passageiros?")
-//process.stdin.on('readable', ()=>{ 
-    // reads what is being typed. 
-    //let variable = process.stdin.read(""); 
-    // trying to read 
-    //variable = variable.toString().replace(/\n/, ""); 
-    //variable = variable.replace(/\r/, ""); 
-
-    //new AeronavePassageiros(Number(variable))
-//});
-var aeropassageiros = new AeronavePassageiros(400);
+/*var aeropassageiros = new AeronavePassageiros(400);
 var aerocarga = new AeronaveCarga(5000);
 var part = new AeronaveParticular('manSul');
+var allaero = new ServicoAeronaves();
+var td = allaero.todas();*/
 
 
 
-
-class PlanoDeVoo {
-    constructor(id, matricPiloto, idAerovia, data, horario, altitude, slots) {
-        this.id = id;
-        this.matricPiloto = matricPiloto;
-        this.idAerovia = idAerovia;
-        this.data = data;
-        this.horario = horario;
-        this.altitude = altitude;
-        this.slots = slots;
-        this.cancelado = false;
-    }
-
-    cancelar() {
-        this.cancelado = true;
-    }
-}
 
 // Exemplo de uso: Plano de Voo
 //const plano1 = new PlanoDeVoo("1", "2", "POA-FLO", "2023-08-15", "14:00", 25000, [14, 15]);
@@ -254,19 +252,11 @@ class PlanoDeVoo {
 //console.log(plano1.cancelado); 
 //console.log(plano2.cancelado);  
 
-class Menu {
-    listarAerovias(){
-        const lists = new ServicoAerovia()
-        console.log(lists.recupera('flo','gru'))
-    }   
-}
-var mn= new Menu();
-//mn.listarAerovias();
 
 
 
 
-class ocupacaoAerovia{
+class OcupacaoAerovia{
     constructor() {
         this.ocupacoes = [];
         
@@ -279,8 +269,10 @@ class ocupacaoAerovia{
 
     }
 
-    slotsOcupados(idAerovia,data, altitude){
-
+    slotsOcupados(idAerovia,data,altitude){
+        return this,this.ocupacoes.filter(ocupacao =>ocupacao.idAerovia === idAerovia && ocupacao.data === data && ocupacao.altitude === altitude)
+        .map(ocupacao => ocupacao.slot)
+        
 
     }
 
@@ -292,31 +284,191 @@ class ocupacaoAerovia{
     }
 
     libera(idAerovia,data,altitude,slot){
-        
-
-
+        this.ocupacoes = this.ocupacoes.filter(ocupacao =>
+            !(ocupacao.idAerovia === idAerovia && ocupacao.data === data && ocupacao.altitude === altitude && ocupacao.slot === slot)
+            );
     }
 
     isOcupado(idAerovia,data,altitude,slot){
-
-
+        return this.ocupacoes.some(ocupacao =>
+            ocupacao.idAerovia === idAerovia && ocupacao.data === data && ocupacao.altitude === altitude && ocupacao.slot === slot
+        );
     }
 }
-var ocuAero1 = new ocupacaoAerovia();
-var oc = ocuAero1.ocupa('r1','2023-08-15', 30000, 14 );
-var oc = ocuAero1.ocupa('r1','2023-08-13', 25000, 17 );
 
-var ocuAero2 = new ocupacaoAerovia();
-var oc = ocuAero2.ocupa('r3','2023-09-02', 28000, 12 );
-var oc = ocuAero2.ocupa('r3','2023-09-05', 32000, 1 );
-var oc = ocuAero2.ocupa('r3','2023-09-10', 31000, 10 );
+var planoDeVoo = []
 
-var ocuAero3 = new ocupacaoAerovia();
-var oc = ocuAero3.ocupa('r7','2023-09-15', 30000, 1 );
-var ocuAero4 = new ocupacaoAerovia();
-var oc = ocuAero4.ocupa('r5','2023-09-10', 28000, 14 );
+class ServicoPlanos{
+    consiste(id, matricPiloto,prefixoAeronave, idAerovia, data, horario, altitude, slots){
+        var planoexiste = planoDeVoo.find(plano => plano.id === id)
+        if (planoexiste){
+            console.log('ID já existe.')
+            return;
+        }
 
-console.log(ocuAero1.altitudesOcupadas("r1", "2023-08-15")); 
+        var pilotoAtivo = new ServicoPilotos().recupera(matricPiloto);
+        if (pilotoAtivo.habilitacao){
+            console.log('sua habilitação está inválida')
+            return
+        }
+        
+            
+        var aeronaveAutonomia = aeronaves.filter(aeronave => aeronave.prefixo === prefixoAeronave);
+        aeronaveAutonomia = aeronaveAutonomia[0]
+        
+        if (aeronaveAutonomia.length == 0){
+            console.log('aeronave nao encontrada')
+            return
+        }
+        var aeroviaAutonomia = new ServicoAerovia().recuperaID(idAerovia);
+        if (aeroviaAutonomia) {
+            var calcAutonomia = aeroviaAutonomia.tamanho * 0.10;
+            calcAutonomia = calcAutonomia + aeroviaAutonomia.tamanho;
+            if (!(Number(aeronaveAutonomia.autonomia) > Number(calcAutonomia))) {
+                console.log('Capacidade da aeronave incompatível com o voo');
+                return;
+            }
+        } 
+
+        var aeronave = aeronaves.find(aeronave => aeronave.prefixo === prefixoAeronave);
+
+        if (!aeronave) {
+            console.log('Aeronave não encontrada.');
+            return;
+        }
+        
+        if (aeronave.prefixo === 'aeronave_particular' && (altitude < 25000 || altitude > 27000)) {
+            console.log('Altitude incompatível com aeronave particular.');
+            return;
+        } 
+                
+            if (aeronave.prefixo === 'aeronave_passageiros' && altitude <= 28000) {
+                console.log('Altitude incompatível com aeronave de passageiros.');
+                return;
+            }
+            if (aeronave.prefixo === 'aeronave_carga'){
+                if (!(horario === '00:00' || horario === '01:00' || 
+                    horario === '02:00' || horario === '03:00' || horario === '04:00' || horario === '05:00' || 
+                    horario === '06:00')){
+                    console.log('Horario incompativel com aeronave de carga')
+                    return
+                }
+            }
+
+
+        planoDeVoo.push(
+            {
+                id: id, /*Math.floor(Date.now() * Math.random()).toString(36),*/
+                matricPiloto: matricPiloto,
+                idAerovia:idAerovia,
+                data: new Date(data),
+                horario: horario,
+                altitude: altitude,
+                slots: slots,
+                cancelado: false
+            }
+        )
+
+    }
+        
+    recupera(id) {
+        var procura = planoDeVoo.find(plano => plano.id === id);
+        if (!procura) {
+            console.log('Plano de voo não encontrado.');
+            return null; // Retorna null para indicar que o plano não foi encontrado
+        }
+        
+        return procura; // Retorna o plano de voo encontrado
+    }
+
+}
+// classe menu com algumas funcoes 
+class Menu {
+    listarAerovias(){
+        const lists = new ServicoAerovia()
+        //console.log(lists.recupera('flo','gru'))
+    } 
+    
+    listarPlanos() {
+        console.log("Lista de planos de voo:");
+        for (const plano of planoDeVoo) {
+            console.log(`ID: ${plano.id}, Matrícula do Piloto: ${plano.matricPiloto}, ID da Aerovia: ${plano.idAerovia}, Data: ${plano.data}, Horário: ${plano.horario}, Altitude: ${plano.altitude}, Slots: ${plano.slots.join(", ")}, Cancelado: ${plano.cancelado}`);
+        }
+    }
+
+    cancelaPlano(id) {
+        const plano = planoDeVoo.find(plano => plano.id === id);
+
+        if (!plano) {
+            console.log('Plano de voo não encontrado.');
+            return;
+        }
+
+        if (plano.cancelado) {
+            console.log('Plano de voo já está cancelado.');
+            return;
+        }
+
+        plano.cancelado = true;
+        console.log('Plano de voo cancelado com sucesso.');
+    }
+    
+    
+}
+
+/*
+// Criar instâncias de ServicoPilotos, ServicoAeronaves e ServicoAerovias
+const servicoPilotos1 = new ServicoPilotos();
+const servicoAeronaves = new ServicoAeronaves();
+const servicoAerovias1 = new ServicoAerovia();
+
+// Exemplo de uso para ServicoPilotos
+const piloto = servicoPilotos1.recupera(1);
+console.log("Piloto:", piloto); // Deve imprimir os detalhes do piloto com matrícula 1
+
+// Exemplo de uso para ServicoAeronaves
+const todasAeronaves = servicoAeronaves.todas();
+console.log("Todas as Aeronaves:", todasAeronaves); // Deve imprimir a lista de todas as aeronaves
+
+// Exemplo de uso para ServicoAerovias
+const aerovia = servicoAerovias1.recuperaID("r2");
+console.log("Aerovia:", aerovia); // Deve imprimir os detalhes da aerovia com id "r2"
+
+// Exemplo de uso para Hierarquia de Classes de Aeronaves
+const aeronaveParticular = new AeronaveParticular("manSul");
+console.log("Aeronave Particular:", aeronaveParticular); // Deve criar uma instância de AeronaveParticular
+
+const aeronaveComercial = new AeronaveComercial({ pesoMax: 20000 }, "Azul");
+console.log("Aeronave Comercial:", aeronaveComercial); // Deve criar uma instância de AeronaveComercial
+
+const aeronavePassageiros = new AeronavePassageiros();
+console.log("Aeronave de Passageiros:", aeronavePassageiros); // Deve criar uma instância de AeronavePassageiros
+
+const aeronaveCarga = new AeronaveCarga();
+console.log("Aeronave de Carga:", aeronaveCarga); // Deve criar uma instância de AeronaveCarga
+
+// Exemplo de uso para ServicoPlanos
+const servicoPlanos = new ServicoPlanos();
+servicoPlanos.consiste("123", 1, "aeronave_passageiros", "r1", "2023-09-02", "15:00", 29000, [15, 16]);
+// Deve criar um plano de voo com os parâmetros especificados
+
+
+// exemplo de uso para o menu 
+const menu = new Menu();
+menu.listarAerovias(); // Lists aerovias
+
+menu.listarPlanos(); // Lists all plans
+
+menu.cancelaPlano("123"); // Cancels the plan with id "123"
+
+const recuperaPlano = servicoPlanos.recupera("123");
+console.log("Plano de Voo Recuperado:", recuperaPlano); // Should retrieve the canceled plan with id "123"
+*/
+
+
+
+
+
 
 
 

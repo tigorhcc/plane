@@ -12,5 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "n-readlines": "^1.0.1"
+  },
+  "devDependencies": {
+    "chai": "^4.3.8"
   }
 }
