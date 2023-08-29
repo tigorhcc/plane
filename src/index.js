@@ -1,4 +1,12 @@
 const lineByLine = require('n-readlines');
+const readline = require('readline');
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false
+  });
+const question = (str) => new Promise(resolve => rl.question(str, resolve));
+
 var aeronaves = []
 var tdaltitudes = [25000,26000,27000,28000,29000,30000,31000,32000,33000,34000,35000]
 
@@ -48,8 +56,9 @@ class ServicoPilotos{
 
 }
 
-const servicoPilotos = new ServicoPilotos();
-servicoPilotos.todos();
+//const servicoPilotos = new ServicoPilotos();
+//const pil = servicoPilotos.todos();
+//console.log(pil);
 
 
 const aeroviasTxt = new lineByLine('./src/assets/aerovias.txt');
@@ -169,9 +178,6 @@ class ServicoAerovia{
         }
     }
 }
-var aro = new ServicoAerovia()
-aro.recupera('gru','flo');
-
 
 class ServicoAeronaves{
     todas(){
@@ -190,6 +196,7 @@ class Aeronave{
             autonomia:autonomia
         }
         aeronaves.push(objAeronave) 
+        console.log(aeronaves)
         
     }
 }
@@ -197,10 +204,24 @@ class Aeronave{
 
 class AeronaveParticular{
     constructor(respManutencao){
+             
         var ob = {respManutencao:respManutencao}
         var uni = 'aeronave_particular'
-        new Aeronave(ob, uni, 800, 2000)
+        new Aeronave(ob, uni, vlc, aut)
 
+    }
+    async partVel(){
+        var velocicru = await question("Qual a velocidade de cruzeiro da aeronave? ", function(answer) {
+            return answer
+            });
+            return velocicru
+    }
+
+    async partAutonomia(){
+        var autonomia_part = await question("Qual a autonomia da aeronave? ", function(answer) {
+            return answer
+            });
+            return autonomia_part
     }
 }
 
@@ -223,13 +244,17 @@ class AeronaveCarga{
 class AeronavePassageiros{
     constructor(maxPas){
         var object  = {maxPassageiros:maxPas}
+
         new AeronaveComercial(object,'latam')
         
         
     }
 }
+ 
 /*var aeropassageiros = new AeronavePassageiros(400);
+
 var aerocarga = new AeronaveCarga(5000);
+
 var part = new AeronaveParticular('manSul');
 var allaero = new ServicoAeronaves();
 var td = allaero.todas();*/
@@ -251,10 +276,6 @@ var td = allaero.todas();*/
 //teste para ver se esta cancelado o voo 
 //console.log(plano1.cancelado); 
 //console.log(plano2.cancelado);  
-
-
-
-
 
 class OcupacaoAerovia{
     constructor() {
@@ -299,27 +320,24 @@ class OcupacaoAerovia{
 var planoDeVoo = []
 
 class ServicoPlanos{
-    consiste(id, matricPiloto,prefixoAeronave, idAerovia, data, horario, altitude, slots){
-        var planoexiste = planoDeVoo.find(plano => plano.id === id)
-        if (planoexiste){
-            console.log('ID já existe.')
-            return;
-        }
-
+    consiste(matricPiloto, prefixoAeronave, idAerovia, data, horario, altitude){
+        
         var pilotoAtivo = new ServicoPilotos().recupera(matricPiloto);
-        if (pilotoAtivo.habilitacao){
+        //console.log(pilotoAtivo)
+        if (!pilotoAtivo.habilitacao){
             console.log('sua habilitação está inválida')
             return
         }
         
             
         var aeronaveAutonomia = aeronaves.filter(aeronave => aeronave.prefixo === prefixoAeronave);
-        aeronaveAutonomia = aeronaveAutonomia[0]
+        
         
         if (aeronaveAutonomia.length == 0){
             console.log('aeronave nao encontrada')
             return
         }
+        aeronaveAutonomia = aeronaveAutonomia[0]
         var aeroviaAutonomia = new ServicoAerovia().recuperaID(idAerovia);
         if (aeroviaAutonomia) {
             var calcAutonomia = aeroviaAutonomia.tamanho * 0.10;
@@ -336,39 +354,40 @@ class ServicoPlanos{
             console.log('Aeronave não encontrada.');
             return;
         }
-        
-        if (aeronave.prefixo === 'aeronave_particular' && (altitude < 25000 || altitude > 27000)) {
+        //true && true && true
+        //true && true 
+        if (!(aeronave.prefixo === 'aeronave_particular' && altitude >= 25000 && altitude <= 27000)) {
             console.log('Altitude incompatível com aeronave particular.');
             return;
         } 
                 
-            if (aeronave.prefixo === 'aeronave_passageiros' && altitude <= 28000) {
-                console.log('Altitude incompatível com aeronave de passageiros.');
-                return;
+        if (!(aeronave.prefixo === 'aeronave_passageiros' && altitude > 28000)) {
+            console.log('Altitude incompatível com aeronave de passageiros.');
+            return;
+        }
+        if (aeronave.prefixo === 'aeronave_carga'){
+            if (!(horario === '00:00' || horario === '01:00' || 
+                horario === '02:00' || horario === '03:00' || horario === '04:00' || horario === '05:00' || 
+                horario === '06:00')){
+                console.log('Horario incompativel com aeronave de carga')
+                return
             }
-            if (aeronave.prefixo === 'aeronave_carga'){
-                if (!(horario === '00:00' || horario === '01:00' || 
-                    horario === '02:00' || horario === '03:00' || horario === '04:00' || horario === '05:00' || 
-                    horario === '06:00')){
-                    console.log('Horario incompativel com aeronave de carga')
-                    return
-                }
-            }
-
+        }
 
         planoDeVoo.push(
             {
-                id: id, /*Math.floor(Date.now() * Math.random()).toString(36),*/
+                id: Math.floor(Date.now() * Math.random()).toString(36),
                 matricPiloto: matricPiloto,
                 idAerovia:idAerovia,
                 data: new Date(data),
                 horario: horario,
                 altitude: altitude,
-                slots: slots,
+                slots: 'slots',
                 cancelado: false
             }
+            
         )
-
+        return planoDeVoo
     }
         
     recupera(id) {
@@ -382,13 +401,143 @@ class ServicoPlanos{
     }
 
 }
+
+
+
 // classe menu com algumas funcoes 
 class Menu {
-    listarAerovias(){
+    constructor(){
+        console.log('-----------------')
+        console.log('##### Menu #####')
+        console.log('----------------------')
+        console.log('| 1-listar aerovias  |')
+        console.log('| 2-listar altitudes |')
+        console.log('| 3- aprovar plano de voo|')
+        console.log('| 4-listar plano de voo |')
+        console.log('| 5-listar ocupação de aerovias |')
+        console.log('| 6-cancelar plano de voo |')
+        console.log('| 7-criar nova aeronave |')
+        console.log('| 0-sair             |')
+        console.log('----------------------')
+        console.log('Escolha sua opção: ')
+        rl.on('line', (option) => {
+            if (option === '1'){
+                this.listarAerovias();
+            } else if (option === '2'){
+                this.listarAltitudesLivres();
+            } else if (option === '3'){
+                this.aprovarPlanoDeVoo();
+            } else if (option === '4'){
+                this.listarPlanos();
+            } else if (option === '5'){
+                this.alistarOcupacao();
+            } else if (option === '6'){
+                this.cancelarPlano();
+            } else if (option ==='7'){
+                this.novaAeronave();
+                
+            }
+            
+            else if (option === '0'){
+                rl.close()
+            } else {
+                console.log('Escolha uma opção válida.')
+            }
+        });
+            
+            
+
+       
+        
+        
+    }
+    async novaAeronave(){
+        console.log('1 - aeronave de carga')
+        console.log('2 - aeronave passageiros')
+        console.log('3 - aeronave particular')
+
+        var tipoaero = await question("Qual o tipo de aeronave? ", function(answer) {
+            return answer
+            });
+            
+            if (tipoaero === '1'){
+                var capacidade = await question("Qual a capacidade maxima de carga? ", function(answer) {
+                    return answer
+                    });
+                new AeronaveCarga(capacidade);
+            }
+                
+            if (tipoaero === '2'){
+                var capacidadePas = await question("Qual a capacidade maxima de passageiros? ", function(answer) {
+                    return answer
+                    });
+                new AeronavePassageiros(capacidadePas);
+            }
+        if (tipoaero === '3'){
+            var manut = await question("Quem e o responsavel pela manutenção? ", function(answer) {
+                return answer
+                });
+            new AeronaveParticular(manut);
+            }
+    }
+
+    async listarAerovias(){
+        console.log('')
+        console.log('poa - Porto Alegre','|','flo - Florianópolis','|', 'gru - Guarulhos','|', 'cwb - Curitiba')
+        var origem = await question("Qual e sua origem? ", function(answer) {
+            return answer
+            });
+        console.log(origem);
+
+        var destino = await question("Qual e sua destino? ", function(answer) {
+            return answer
+            });
+        console.log(destino);
+        
+        
         const lists = new ServicoAerovia()
-        //console.log(lists.recupera('flo','gru'))
+        console.log(lists.recupera(origem,destino))
     } 
-    
+
+    listarAltitudesLivres(){
+        
+        
+
+    }
+
+    async  aprovarPlanoDeVoo(){
+        var matric = await question("Qual a matricula do piloto? ", function(answer) {
+            return answer
+            });
+
+        var prefaero = await question("Qual o prefixo da aeronave? ", function(answer) {
+            return answer
+            });
+
+        var id_aerovia = await question("Qual o ID da aerovia ? ", function(answer) {
+            return answer
+            });
+
+        var dt = await question("Qual a data do voo ? ", function(answer) {
+            return answer
+            });   
+            
+        var horario_voo = await question("Qual horário do voo ? ", function(answer) {
+            return answer
+            });
+
+        var alt = await question("Qual altitude do voo ? ", function(answer) {
+            return answer
+            });
+
+        var cria_plano = new ServicoPlanos().consiste(matric, prefaero, id_aerovia, dt, horario_voo, alt);
+            console.log(cria_plano);
+        
+        
+    }
+
+    //consiste(matricPiloto, prefixoAeronave, idAerovia, data, horario, altitude, slots)
+
     listarPlanos() {
         console.log("Lista de planos de voo:");
         for (const plano of planoDeVoo) {
@@ -415,6 +564,9 @@ class Menu {
     
     
 }
+new Menu()
+
+
 
 /*
 // Criar instâncias de ServicoPilotos, ServicoAeronaves e ServicoAerovias
@@ -423,8 +575,8 @@ const servicoAeronaves = new ServicoAeronaves();
 const servicoAerovias1 = new ServicoAerovia();
 
 // Exemplo de uso para ServicoPilotos
-const piloto = servicoPilotos1.recupera(1);
-console.log("Piloto:", piloto); // Deve imprimir os detalhes do piloto com matrícula 1
+const piloto = servicoPilotos1.todos();
+console.log("Pilotos:", piloto); // Deve imprimir os detalhes do piloto com matrícula 1
 
 // Exemplo de uso para ServicoAeronaves
 const todasAeronaves = servicoAeronaves.todas();
